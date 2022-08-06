@@ -1,29 +1,23 @@
-import {Component} from "react";
+import { useEffect} from "react";
 import { Overlay, ModalBox } from "./Modal.styled";
 import PropTypes from 'prop-types';
 
-export class Modal extends Component{
- componentDidMount() {
-         window.addEventListener('keydown', this.props.onClose);
-    };
-    
-      componentWillUnmount() {
-          window.removeEventListener('keydown', this.props.onClose);
-      }
+export const Modal = ({ bigImage, alt, onClose }) => {
+  
+useEffect(() => {
+    window.addEventListener('keydown', onClose);
+        return () => {
+            window.removeEventListener('keydown', onClose);
+        }
+    }, [onClose]);
 
-     onBackdropClick = e => {
-    if (e.target === e.currentTarget || e.code === 'Escape') {
-      this.props.onClose();
-    }
-  };
-render(){
-    return (<Overlay className="overlay" onClick={this.onBackdropClick}>
+    return (
+    <Overlay className="overlay" onClick={onClose}>
         <ModalBox className="modal">
-            <img src={this.props.bigImage} alt={this.props.alt} />
+            <img src={bigImage} alt={alt} />
         </ModalBox>
         </Overlay>)
     };
-};
 
 Modal.propTypes = {
     bigImage: PropTypes.string,

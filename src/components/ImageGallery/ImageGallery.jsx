@@ -1,26 +1,26 @@
 import React from "react";
 import PropTypes from 'prop-types';
+import { nanoid } from 'nanoid'
 
 import { ImgGallery } from "./ImgGallery.styled";
 import {ImageGalleryItem } from "../ImageGalleryItem/ImageGalleryItem"
 
-export function ImageGallery  ({hits, openModal }) 
-          {return (<ImgGallery className="gallery" >        
-           {hits.map(({ id, webformatURL, tags, largeImageURL}) => 
-               <ImageGalleryItem
-                   key={id}
-                   webformatURL={webformatURL}
-                   tag={tags} 
-                   openModal={openModal}
-                   largeImageURL={largeImageURL}
-                   />
-            )}     
-        </ImgGallery>)}
+export const ImageGallery = ({ hits, openModal }) => (
+    <ImgGallery className="gallery" >
+        {hits.map(({  webformatURL, tags, largeImageURL }) =>
+            <ImageGalleryItem
+                key={nanoid()}
+                webformatURL={webformatURL}
+                tag={tags}
+                openModal={openModal}
+                largeImageURL={largeImageURL}
+            />
+        )}
+    </ImgGallery>);
         
    
 ImageGallery.propTypes = {
     hits: PropTypes.array.isRequired,
-    itemName: PropTypes.string.isRequired,
     openModal: PropTypes.func.isRequired,
 };
  

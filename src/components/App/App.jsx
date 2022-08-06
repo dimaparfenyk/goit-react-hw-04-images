@@ -1,4 +1,4 @@
-import  { Component } from "react";
+import  { useState, useEffect} from "react";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -11,115 +11,87 @@ import { LoadMoreBtn } from "components/Button/Button";
 import { Loader } from "components/Loader/Loader";
 import { Container } from "./App.styled";
 
-export class App extends Component {
-  state = {
-    itemName: '',
-    hits: [],
-    totalHits: 0,
-    page: 1,
-    preLoading: false,
-    showModal: false,
-    biggerImageUrl: '',
-    tag:'image',
-  }
-   
-  componentDidUpdate(_, prevState) {
-    const prevName = prevState.itemName;
-    const currentName = this.state.itemName;
-    const prevPage = prevState.page;
-    const currentPage = this.state.page;
+export const App = () => {
+  const [itemName, setItemName] = useState('');
+  const [hits, setHits] = useState([]);
+  const [totalHits, setTotalHits] = useState(0);
+  const [page, setPage] = useState(1);
+  const [preLoading, setPreLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [biggerImageUrl, setBiggerImageUrl] = useState('');
+  const [tag, setTag] = useState('');
 
-    if (prevName !== currentName) {
-      this.setState({ page: 1 });
-    }
+  useEffect(() => {
+    setPreLoading(true);
 
-    if (prevName !== currentName ||
-      prevPage !== currentPage) {
-      this.setState({ preLoading: true });
-       
-      searchImg(currentName, currentPage)
-        .then(({ hits, totalHits }) => {
-      
-          this.setState({ totalHits });
-          
-          if (prevName === currentName) {
-            this.setState(prevState => ({
-              hits: [...prevState.hits, ...hits],
-            }));
-          }
-          if (prevName !== currentName) {
-            this.setState({ hits });
-          }
-        })
-        .catch(error => toast.error(error.message, {
-          position: 'top-right',
-          autoClose: 4000,
-          closeOnClick: true
-            
-        }))
-        .finally(() => this.setState({ preLoading: false }));
-    }
-    if (this.state.hits.length>=this.state.totalHits && this.state.hits.length!==0) {
+    searchImg(itemName, page)
+      .then(({ hits, totalHits }) => {
+        setTotalHits(totalHits);
+        if (itemName !== '') {
+          setHits(prevState => ([...prevState, ...hits])
+          );
+        };
+      })
+      .catch(error => toast.error(error.message, {
+        position: 'top-right',
+        autoClose: 4000,
+        closeOnClick: true,
+      }))
+      .finally(() => setPreLoading(false));
+  }, [itemName, page]);
+
+  useEffect(() => {
+    if (hits.length >= totalHits&& hits.length!==0) {
       toast('There are no more pictures with such query!', {
         position: 'top-right',
         autoClose: 4000,
         closeOnClick: true,
       });
     }
-  };
-
-  onLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1
-    }
-    ));
-  };
-
-  handleFormSubmit = name => {
-    this.setState({
-      itemName: name,
-      page: 1,
-      hits: [],
-    })
-  };
-
-  toggleModal = () => {
-     this.setState(({ showModal }) => (
-       {
-         showModal: !showModal
-       }));
-   };
+  },[hits.length, totalHits]);
   
-  openModal = e => {
-    this.setState({
-      biggerImageUrl: e.currentTarget.src,
-      alt: e.target.alt
-    })
-    this.toggleModal();
+  const onLoadMore = () => {
+    setPreLoading(true);
+    setPage(prevState => prevState + 1);
   };
 
-  render() {
-    const {itemName, hits,totalHits, preLoading, showModal, biggerImageUrl, tag } = this.state;
-     
-    return (
-      <Container>
-        <SearchBar totalHits={totalHits} onSubmit={this.handleFormSubmit} />
-        <ToastContainer/>
-        {!showModal|| <Modal/>}
-        <ImageGallery
-          itemName={itemName}
-          hits={hits}
-          openModal={this.openModal} />
-        {hits.length===0 || hits.length>=totalHits || <LoadMoreBtn onClick={this.onLoadMore} />}
-        {preLoading && <Loader />}
-        {showModal && (<Modal
-          onClose={this.toggleModal}
-          bigImage={biggerImageUrl}
-          tag={tag}
-          />
-        )}
-      </Container>
-    )
-  }
-}
+  const handleFormSubmit = name => {
+    setItemName(name);
+    setPage(1);
+    setHits([]);
+  };
+
+  const onClose = e => {
+    if (e.target === e.currentTarget || e.code === 'Escape') {
+      setShowModal(!showModal);
+    }
+  };
+  
+  const openModal = e => {
+    setBiggerImageUrl(e.currentTarget.src);
+    setTag(e.target.alt);
+    setShowModal(!showModal);
+  };
+  
+  return (
+    <Container>
+      <SearchBar totalHits={totalHits} onSubmit={handleFormSubmit} />
+      <ToastContainer/>
+      {!showModal || <Modal />}
+      <ImageGallery
+        itemName={itemName}
+        hits={hits}
+        openModal={openModal} />
+      {hits.length === 0 || hits.length >= totalHits || <LoadMoreBtn onClick={onLoadMore} />}
+      {preLoading && <Loader />}
+      {showModal && (<Modal
+        onClose={onClose}
+        bigImage={biggerImageUrl}
+        tag={tag}
+      />
+      )}
+    </Container>
+  );
+};
+
 
