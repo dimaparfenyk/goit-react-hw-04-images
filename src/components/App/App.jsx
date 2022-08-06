@@ -22,6 +22,9 @@ export const App = () => {
   const [tag, setTag] = useState('');
 
   useEffect(() => {
+    if (itemName === '') {
+      return
+    }
     setPreLoading(true);
 
     searchImg(itemName, page)
